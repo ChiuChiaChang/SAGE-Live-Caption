@@ -1,0 +1,81 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+  release:
+    types: [created]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: 'x64'
+          cache: 'pip'
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-build.txt
+
+      - name: Download Sherpa-ONNX English streaming model
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $model = 'sherpa-onnx-streaming-zipformer-en-2023-06-26'
+          $url = 'https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-streaming-zipformer-en-2023-06-26.tar.bz2'
+          New-Item -ItemType Directory -Force -Path models | Out-Null
+          Invoke-WebRequest -Uri $url -OutFile "$model.tar.bz2"
+          tar -xjf "$model.tar.bz2" -C models
+          Remove-Item "$model.tar.bz2"
+
+      - name: Verify model
+        shell: pwsh
+        run: |
+          $base = 'models/sherpa-onnx-streaming-zipformer-en-2023-06-26'
+          $required = @(
+            'tokens.txt',
+            'encoder-epoch-99-avg-1-chunk-16-left-128.onnx',
+            'decoder-epoch-99-avg-1-chunk-16-left-128.onnx',
+            'joiner-epoch-99-avg-1-chunk-16-left-128.onnx'
+          )
+          foreach ($file in $required) {
+            if (-not (Test-Path "$base/$file")) { throw "Missing model file: $base/$file" }
+          }
+
+      - name: Build single EXE
+        shell: pwsh
+        run: |
+          pyinstaller --noconfirm --clean build/SAGE-Live-Caption.spec
+
+      - name: Verify EXE
+        shell: pwsh
+        run: |
+          if (-not (Test-Path 'dist/SAGE-Live-Caption.exe')) { throw 'EXE was not generated.' }
+          Get-Item 'dist/SAGE-Live-Caption.exe' | Format-List Name,Length,LastWriteTime
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SAGE-Live-Caption-Windows-x64
+          path: dist/SAGE-Live-Caption.exe
+          if-no-files-found: error
+
+      - name: Attach EXE to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/SAGE-Live-Caption.exe
