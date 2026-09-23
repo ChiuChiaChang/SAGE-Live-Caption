@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+build-temp/
+dist/
+models/
+Output/
+*.spec.bak
