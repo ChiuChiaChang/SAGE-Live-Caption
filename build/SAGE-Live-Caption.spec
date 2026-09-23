@@ -2,7 +2,7 @@
 from pathlib import Path
 from PyInstaller.utils.hooks import collect_all
 
-project_root = Path(SPECPATH).parent.parent
+project_root = Path(SPECPATH).parent
 model_name = "sherpa-onnx-streaming-zipformer-en-2023-06-26"
 model_dir = project_root / "models" / model_name
 
