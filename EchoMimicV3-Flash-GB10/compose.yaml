@@ -1,0 +1,20 @@
+# Getac EchoMimicV3-Flash GB10 v1.0.1.0
+services:
+  echomimicv3-flash:
+    image: getac-echomimicv3-flash:1.0.1.0
+    build: .
+    container_name: getac-echomimicv3-flash
+    restart: unless-stopped
+    ports:
+      # Localhost-only by default; use an SSH tunnel for a remote Windows client.
+      - "127.0.0.1:8300:8300"
+    volumes:
+      - ./models:/data/models:ro
+      - ./jobs:/data/jobs
+    environment:
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      HF_HUB_DISABLE_TELEMETRY: "1"
+      PYTORCH_ALLOC_CONF: "expandable_segments:True"
+    ipc: host
+    gpus: all
