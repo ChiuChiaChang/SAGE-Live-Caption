@@ -4,7 +4,7 @@
 
 - Dedicated Docker image: `getac-echomimicv3-flash:1.0.1.0`
 - Container: `getac-echomimicv3-flash`
-- Local-only API: `http://127.0.0.1:8300`
+- LAN-reachable API: `http://GB10_IP:8300` (binds `0.0.0.0:8300`; restrict port 8300 to trusted clients using a firewall)
 - NVIDIA official DGX Spark PyTorch base: `nvcr.io/nvidia/pytorch:25.11-py3`
 - Offline inference after a one-time model download
 - API generation: **1–3.2 seconds of audio per job**, queued for one GPU
@@ -20,7 +20,7 @@ bash setup.sh
 
 **Requirements:** GB10 ARM64, NVIDIA Container Toolkit, Docker Compose v2, internet for first install, at least ~50GB free disk space. The base model, Flash checkpoint and Wav2Vec2 encoder are downloaded at setup time and are **not committed to GitHub**. Validate available RAM; on a 128GB unified-memory GB10 other running GPU processes can cause OOM.
 
-### Basic check
+### Updating an already running container after this Compose port change\n\n```bash\ncd ~/SAGE-Live-Caption/EchoMimicV3-Flash-GB10\ngit pull --ff-only\nsudo docker compose up -d --no-build\nsudo docker ps --filter name=getac-echomimicv3-flash\n```\n\nThe container may be recreated briefly to apply the new published port; other services are unaffected.\n\n## Basic check
 
 ```bash
 sudo docker ps --filter name=getac-echomimicv3-flash
@@ -65,7 +65,7 @@ curl -X POST http://127.0.0.1:8300/api/presenter/create \
   -F "avatar=@input/avatar.jpg" -F "audio=@input/speech.wav"
 ```
 
-Jobs run one at a time to avoid competing GPU work. For Windows Voice Studio clients, create an SSH tunnel `ssh -L 8300:127.0.0.1:8300 corin@YOUR_GB10_IP` and use `http://127.0.0.1:8300/docs`. Do not expose this prototype API on the public Internet without authentication and network access controls.
+Jobs run one at a time to avoid competing GPU work. For Windows Voice Studio clients on the trusted LAN, use `http://YOUR_GB10_IP:8300/docs`. No SSH tunnel is required. The prototype API has no authentication: restrict TCP 8300 with your GB10 firewall/router to trusted client IPs, and never forward it to the public Internet.
 
 ## Troubleshooting / limits
 
