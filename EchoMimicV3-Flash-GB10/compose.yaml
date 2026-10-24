@@ -6,8 +6,8 @@ services:
     container_name: getac-echomimicv3-flash
     restart: unless-stopped
     ports:
-      # Localhost-only by default; use an SSH tunnel for a remote Windows client.
-      - "127.0.0.1:8300:8300"
+      # Listen on all IPv4 host interfaces. Restrict access via firewall or trusted LAN.
+      - "0.0.0.0:8300:8300"
     volumes:
       - ./models:/data/models:ro
       - ./jobs:/data/jobs
