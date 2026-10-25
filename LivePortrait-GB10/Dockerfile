@@ -8,6 +8,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /opt
 RUN git clone --filter=blob:none https://github.com/KlingAIResearch/LivePortrait.git liveportrait \
  && cd liveportrait && git checkout "$LIVEPORTRAIT_COMMIT"
+# Weights live on persistent host storage. Upstream config expects pretrained_weights under its repo.
+RUN rm -rf /opt/liveportrait/pretrained_weights && ln -s /data/models /opt/liveportrait/pretrained_weights
 COPY requirements-gb10.txt /opt/getac/requirements-gb10.txt
 # Keep NGC's preinstalled CUDA-enabled torch; do not install upstream's x86-era onnxruntime-gpu pin.
 RUN python -m pip install --no-cache-dir -r /opt/getac/requirements-gb10.txt
