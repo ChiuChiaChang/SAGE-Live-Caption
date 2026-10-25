@@ -1,0 +1,25 @@
+services:
+  liveportrait:
+    container_name: getac-liveportrait
+    image: getac-liveportrait-gb10:1.0.0.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    gpus: all
+    ports:
+      - "0.0.0.0:${LIVEPORTRAIT_PORT:-8400}:8400"
+    environment:
+      - LIVEPORTRAIT_DATA=/data
+      - HF_HOME=/data/hf-cache
+      - OMP_NUM_THREADS=4
+      - OPENCV_LOG_LEVEL=ERROR
+    volumes:
+      - "${LIVEPORTRAIT_DATA_DIR:?Set LIVEPORTRAIT_DATA_DIR in .env}:/data"
+    restart: unless-stopped
+    shm_size: "2gb"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8400/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
