@@ -1,0 +1,29 @@
+name: LivePortrait GB10 Static Validation
+
+on:
+  push:
+    paths:
+      - 'LivePortrait-GB10/**'
+      - '.github/workflows/liveportrait-gb10-check.yml'
+  pull_request:
+    paths:
+      - 'LivePortrait-GB10/**'
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check Python syntax
+        run: python3 -m py_compile LivePortrait-GB10/server.py LivePortrait-GB10/download_models.py LivePortrait-GB10/patch_arm64.py
+      - name: Check Bash syntax
+        run: bash -n LivePortrait-GB10/install.sh LivePortrait-GB10/deploy.sh LivePortrait-GB10/test_api.sh
+      - name: Validate Docker Compose
+        run: |
+          LIVEPORTRAIT_DATA_DIR=/tmp/getac-liveportrait-test LIVEPORTRAIT_PORT=8400 docker compose -f LivePortrait-GB10/docker-compose.yml config --quiet
+      - name: Verify Dockerfile features
+        run: |
+          grep -q 'nvcr.io/nvidia/pytorch:25.11-py3' LivePortrait-GB10/Dockerfile
+          grep -q 'patch_arm64.py' LivePortrait-GB10/Dockerfile
+          grep -q 'ln -s /data/models' LivePortrait-GB10/Dockerfile
