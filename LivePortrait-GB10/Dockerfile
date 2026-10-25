@@ -13,7 +13,8 @@ RUN rm -rf /opt/liveportrait/pretrained_weights && ln -s /data/models /opt/livep
 COPY requirements-gb10.txt /opt/getac/requirements-gb10.txt
 # Keep NGC's preinstalled CUDA-enabled torch; do not install upstream's x86-era onnxruntime-gpu pin.
 RUN python -m pip install --no-cache-dir -r /opt/getac/requirements-gb10.txt
-COPY server.py download_models.py /opt/getac/
+COPY server.py download_models.py patch_arm64.py /opt/getac/
+RUN python /opt/getac/patch_arm64.py
 WORKDIR /opt/liveportrait
 EXPOSE 8400
 CMD ["python", "-m", "uvicorn", "server:app", "--app-dir", "/opt/getac", "--host", "0.0.0.0", "--port", "8400", "--workers", "1"]
