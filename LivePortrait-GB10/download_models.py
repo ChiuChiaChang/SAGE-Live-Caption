@@ -18,8 +18,8 @@ paths = [
     "insightface/models/buffalo_l/2d106det.onnx",
 ]
 if not all((root / p).is_file() and (root / p).stat().st_size > 100_000 for p in paths):
-    print("Downloading https://huggingface.co/KwaiVGI/LivePortrait ...", flush=True)
-    snapshot_download(repo_id="KwaiVGI/LivePortrait", repo_type="model", local_dir=str(root), allow_patterns=["liveportrait/**", "insightface/**"])
+    print("Downloading https://huggingface.co/KlingTeam/LivePortrait ...", flush=True)
+    snapshot_download(repo_id="KlingTeam/LivePortrait", repo_type="model", local_dir=str(root), allow_patterns=["liveportrait/**", "insightface/**"])
 missing = [p for p in paths if not (root / p).is_file() or (root / p).stat().st_size <= 100_000]
 if missing:
     print("ERROR: missing weights: " + ", ".join(missing), file=sys.stderr)
